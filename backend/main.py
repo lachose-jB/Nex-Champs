@@ -1,15 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import sys
-import os
+from fastapi import FastAPI
 
-# Add the backend directory to Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from database import init_db
-from config import settings
-from api import api_router
+# Use relative imports for proper package structure
+from backend.database import init_db
+from backend.config import settings
+from backend.api import api_router
 
 app = FastAPI(title="Nex-Champs Backend", version="0.1.0")
 
@@ -22,9 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize database on startup
+# Initialize database on startup (using lifecycle events)
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     init_db()
 
 # Include API router

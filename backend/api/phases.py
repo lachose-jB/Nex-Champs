@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from typing import List
-from ..models.phases import Phase, PhaseCreate, PhaseRead
-from ..models.meetings import Meeting
-from ..database import get_db
-from ..utils.auth import get_current_active_user
+from backend.models.phases import Phase, PhaseCreate, PhaseRead
+from backend.models.meetings import Meeting
+from backend.database import get_db
+from backend.utils.auth import get_current_active_user
 
 router = APIRouter()
 

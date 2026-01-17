@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: nexchamps-backend
+Version: 0.1.0
+Summary: Secure meeting token system backend
+Home-page: https://github.com/yourorg/nexchamps
+Author: Nex-Champs Team
+License: MIT
+Keywords: meeting,token,collaboration,security
+Requires-Python: >=3.7

@@ -1,13 +1,13 @@
 from fastapi import APIRouter
-from .meetings import router as meetings_router
-from .tokens import router as tokens_router
-from .phases import router as phases_router
-from .annotations import router as annotations_router
-from .decisions import router as decisions_router
-from .auth import router as auth_router
-from .stats import router as stats_router
-from .websocket import router as websocket_router
-from .webrtc import router as webrtc_router
+from backend.api.meetings import router as meetings_router
+from backend.api.tokens import router as tokens_router
+from backend.api.phases import router as phases_router
+from backend.api.annotations import router as annotations_router
+from backend.api.decisions import router as decisions_router
+from backend.api.auth import router as auth_router
+from backend.api.stats import router as stats_router
+from backend.api.websocket import router as websocket_router
+from backend.api.webrtc import router as webrtc_router
 
 api_router = APIRouter()
 

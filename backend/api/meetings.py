@@ -1,16 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from typing import List
-import sys
-import os
 
-# Add the backend directory to Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from models.meetings import Meeting, MeetingCreate, MeetingRead
-from models.participants import Participant, ParticipantCreate
-from database import get_db
-from utils.auth import get_current_active_user
+# Import from backend package
+from backend.models.meetings import Meeting, MeetingCreate, MeetingRead
+from backend.models.participants import Participant, ParticipantCreate
+from backend.database import get_db
+from backend.utils.auth import get_current_active_user
 
 router = APIRouter()
 

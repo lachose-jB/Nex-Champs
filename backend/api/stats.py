@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, func
 from typing import Dict, Any
 from datetime import datetime
-from ..models.tokens import TokenEvent
-from ..models.annotations import Annotation
-from ..models.participants import Participant
-from ..database import get_db
-from ..utils.auth import get_current_active_user
+from backend.models.tokens import TokenEvent
+from backend.models.annotations import Annotation
+from backend.models.participants import Participant
+from backend.database import get_db
+from backend.utils.auth import get_current_active_user
 
 router = APIRouter()
 
