@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from ..websocket import manager
-from ..utils.auth import get_current_active_user
+from backend.websocket import manager
+from backend.utils.auth import get_current_active_user
 from typing import Optional
 import json
 

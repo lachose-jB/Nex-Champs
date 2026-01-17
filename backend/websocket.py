@@ -2,9 +2,9 @@ from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
 from typing import Dict, List
 import json
-from .models.tokens import TokenEvent
-from .models.phases import Phase
-from .models.annotations import Annotation
+from backend.models.tokens import TokenEvent
+from backend.models.phases import Phase
+from backend.models.annotations import Annotation
 
 class ConnectionManager:
     def __init__(self):

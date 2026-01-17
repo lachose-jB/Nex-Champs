@@ -1,0 +1,28 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="nexchamps_backend",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        "fastapi==0.111.0",
+        "uvicorn==0.30.1",
+        "python-jose==3.3.0",
+        "passlib==1.7.4",
+        "python-multipart==0.0.9",
+        "sqlalchemy==2.0.30",
+        "sqlmodel==0.0.16",
+        "websockets==12.0",
+        "python-dotenv==1.0.1",
+        "aiofiles==23.2.1",
+        "pydantic==2.7.1",
+        "pydantic-settings==2.3.4",
+        "python-socketio==5.11.2"
+    ],
+    python_requires=">=3.7",
+    author="Nex-Champs Team",
+    description="Secure meeting token system backend",
+    license="MIT",
+    keywords="meeting, token, collaboration, security",
+    url="https://github.com/yourorg/nexchamps"
+)
