@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'react/style-prop-object': 'off',
+      // Allow style prop in jsx
+      'jsx-a11y/no-static-element-interactions': 'off',
+    },
   },
 ])
