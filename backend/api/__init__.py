@@ -8,6 +8,7 @@ from backend.api.auth import router as auth_router
 from backend.api.stats import router as stats_router
 from backend.api.websocket import router as websocket_router
 from backend.api.webrtc import router as webrtc_router
+from backend.api.invitations import router as invitations_router
 
 api_router = APIRouter()
 
@@ -21,3 +22,4 @@ api_router.include_router(decisions_router, prefix="/decisions", tags=["decision
 api_router.include_router(stats_router, prefix="/stats", tags=["stats"])
 api_router.include_router(websocket_router, prefix="/ws", tags=["websocket"])
 api_router.include_router(webrtc_router, prefix="/webrtc", tags=["webrtc"])
+api_router.include_router(invitations_router, prefix="/invitations", tags=["invitations"])

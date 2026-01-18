@@ -9,6 +9,7 @@ from .models.phases import Phase
 from .models.annotations import Annotation
 from .models.decisions import Decision
 from .models.users import User
+from .models.invitations import Invitation
 from backend.config import settings
 
 # Database engine
