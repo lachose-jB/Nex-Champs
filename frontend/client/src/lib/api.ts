@@ -75,16 +75,68 @@ async function apiCall<T>(
 export interface LoginResponse {
   access_token: string;
   token_type: string;
+  refresh_token?: string;
+  expires_in?: number;
 }
 
 export interface User {
   id: number;
   username: string;
   email: string;
+  full_name?: string;
   role?: string;
+  is_verified?: boolean;
+  created_at?: string;
+}
+
+export interface SignupData {
+  username: string;
+  email: string;
+  password: string;
+  full_name?: string;
+}
+
+export interface SignupResponse {
+  id: number;
+  username: string;
+  email: string;
+  message: string;
 }
 
 export const authAPI = {
+  /**
+   * Register a new user
+   * POST /auth/signup
+   */
+  signup: async (data: SignupData): Promise<SignupResponse> => {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Signup failed';
+      try {
+        const errorData: ApiErrorResponse = await response.json();
+        if (typeof errorData.detail === 'string') {
+          errorMessage = errorData.detail;
+        } else if (Array.isArray(errorData.detail)) {
+          errorMessage = errorData.detail.map(d => d.msg).join(', ');
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Use default error message
+      }
+      throw new ApiError(response.status, errorMessage);
+    }
+
+    return response.json();
+  },
+
   /**
    * Login with username and password
    * POST /auth/token
@@ -129,10 +181,55 @@ export const authAPI = {
   },
 
   /**
+   * Refresh access token
+   * POST /auth/refresh
+   */
+  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+    return apiCall<LoginResponse>('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+  },
+
+  /**
+   * Request password reset
+   * POST /auth/password-reset/request
+   */
+  requestPasswordReset: async (email: string): Promise<{ message: string }> => {
+    return apiCall<{ message: string }>('/auth/password-reset/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  /**
+   * Reset password with token
+   * POST /auth/password-reset/confirm
+   */
+  resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
+    return apiCall<{ message: string }>('/auth/password-reset/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+  },
+
+  /**
+   * Verify email address
+   * POST /auth/verify-email
+   */
+  verifyEmail: async (token: string): Promise<{ message: string }> => {
+    return apiCall<{ message: string }>('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  },
+
+  /**
    * Logout (clear token)
    */
   logout: async (): Promise<void> => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
   },
 };
 
@@ -761,6 +858,56 @@ export class MeetingWebSocket {
     this.messageHandlers.clear();
   }
 }
+
+/**
+ * Helper function to save authentication tokens
+ */
+export const saveAuthTokens = (tokens: LoginResponse): void => {
+  localStorage.setItem('auth_token', tokens.access_token);
+  if (tokens.refresh_token) {
+    localStorage.setItem('refresh_token', tokens.refresh_token);
+  }
+  if (tokens.expires_in) {
+    const expiresAt = Date.now() + tokens.expires_in * 1000;
+    localStorage.setItem('token_expires_at', expiresAt.toString());
+  }
+};
+
+/**
+ * Helper function to check if token is expired
+ */
+export const isTokenExpired = (): boolean => {
+  const expiresAt = localStorage.getItem('token_expires_at');
+  if (!expiresAt) return false;
+  return Date.now() > parseInt(expiresAt);
+};
+
+/**
+ * Helper function to get valid token (refresh if needed)
+ */
+export const getValidToken = async (): Promise<string | null> => {
+  const token = localStorage.getItem('auth_token');
+  if (!token) return null;
+  
+  if (isTokenExpired()) {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      authAPI.logout();
+      return null;
+    }
+    
+    try {
+      const newTokens = await authAPI.refreshToken(refreshToken);
+      saveAuthTokens(newTokens);
+      return newTokens.access_token;
+    } catch (error) {
+      authAPI.logout();
+      return null;
+    }
+  }
+  
+  return token;
+};
 
 // ============================================
 // EXPORT ALL APIs

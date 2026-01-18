@@ -35,6 +35,23 @@ def verify_password(plain_password: str, hashed_password: str):
 def get_password_hash(password: str):
     return pwd_context.hash(password)
 
+# Alias for backward compatibility
+hash_password = get_password_hash
+
+def validate_password(password: str):
+    """
+    Validate password strength requirements
+    """
+    if len(password) < 8:
+        raise ValueError("Password must be at least 8 characters")
+    if not any(char.isupper() for char in password):
+        raise ValueError("Password must contain at least one uppercase letter")
+    if not any(char.isdigit() for char in password):
+        raise ValueError("Password must contain at least one number")
+    if not any(char in "!@#$%^&*()_+-=[]{}|;:,.<>?" for char in password):
+        raise ValueError("Password must contain at least one special character")
+    return True
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
