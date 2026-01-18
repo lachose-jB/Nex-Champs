@@ -11,6 +11,8 @@ import Signup from "./pages/Signup";
 import MeetingRoom from "./pages/MeetingRoom";
 import GovernanceDashboard from "./pages/GovernanceDashboard";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import MyMeetings from "./pages/MyMeetings";
 
 function Router() {
   return (
@@ -19,6 +21,8 @@ function Router() {
       <Route path={"/login"} component={Login} />
       <Route path={"/signup"} component={Signup} />
       <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/profile"} component={Profile} />
+      <Route path={"/meetings"} component={MyMeetings} />
       <Route path={"/meeting/:meetingId"} component={MeetingRoom} />
       <Route path={"/meeting/:meetingId/dashboard"} component={GovernanceDashboard} />
       <Route path={"/404"} component={NotFound} />

@@ -124,9 +124,20 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            <div className="text-sm text-gray-600">
-              {t("common.welcome")}, <span className="font-semibold">{user?.username}</span>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation("/meetings")}
+            >
+              {t("meetings.myMeetings") || "My Meetings"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation("/profile")}
+            >
+              {user?.username}
+            </Button>
           </div>
         </div>
       </header>

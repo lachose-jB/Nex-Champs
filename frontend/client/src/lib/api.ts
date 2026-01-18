@@ -60,6 +60,11 @@ async function apiCall<T>(
     throw new ApiError(response.status, errorMessage);
   }
 
+  // Handle 204 No Content responses
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
@@ -98,7 +103,18 @@ export const authAPI = {
     });
 
     if (!response.ok) {
-      throw new ApiError(response.status, 'Login failed');
+      let errorMessage = 'Login failed';
+      try {
+        const errorData = await response.json();
+        if (errorData.detail) {
+          errorMessage = typeof errorData.detail === 'string' 
+            ? errorData.detail 
+            : 'Invalid credentials';
+        }
+      } catch (e) {
+        // Use default error message
+      }
+      throw new ApiError(response.status, errorMessage);
     }
 
     return response.json();
@@ -171,11 +187,32 @@ export const meetingsAPI = {
   },
 
   /**
+   * Update meeting details
+   * PUT /meetings/{id}
+   */
+  update: async (meetingId: number, data: { name?: string; description?: string; status?: string }): Promise<Meeting> => {
+    return apiCall<Meeting>(`/meetings/${meetingId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete a meeting
+   * DELETE /meetings/{id}
+   */
+  delete: async (meetingId: number): Promise<void> => {
+    return apiCall<void>(`/meetings/${meetingId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
    * Join an existing meeting
    * POST /meetings/{id}/join
    */
-  join: async (meetingId: number, data: { name: string; role?: string }): Promise<{ message: string; meeting_id: number }> => {
-    return apiCall<{ message: string; meeting_id: number }>(`/meetings/${meetingId}/join`, {
+  join: async (meetingId: number, data: { name: string; role?: string }): Promise<{ message: string; meeting_id: number; participant_id: number }> => {
+    return apiCall<{ message: string; meeting_id: number; participant_id: number }>(`/meetings/${meetingId}/join`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -203,10 +240,30 @@ export const meetingsAPI = {
    * Invite a participant to a meeting
    * POST /meetings/{id}/invite
    */
-  invite: async (meetingId: number, data: { name: string; role?: string; email?: string }): Promise<any> => {
-    return apiCall<any>(`/meetings/${meetingId}/invite`, {
+  invite: async (meetingId: number, data: { name: string; role?: string; email?: string }): Promise<{ message: string; invitation_id: number }> => {
+    return apiCall<{ message: string; invitation_id: number }>(`/meetings/${meetingId}/invite`, {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Start a meeting
+   * POST /meetings/{id}/start
+   */
+  start: async (meetingId: number): Promise<{ message: string; meeting_id: number }> => {
+    return apiCall<{ message: string; meeting_id: number }>(`/meetings/${meetingId}/start`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * End a meeting
+   * POST /meetings/{id}/end
+   */
+  end: async (meetingId: number): Promise<{ message: string; meeting_id: number }> => {
+    return apiCall<{ message: string; meeting_id: number }>(`/meetings/${meetingId}/end`, {
+      method: 'POST',
     });
   },
 };
@@ -221,6 +278,16 @@ export interface TokenEvent {
   participant_id: number;
   event_type: 'claim' | 'release';
   timestamp?: string;
+}
+
+export interface TokenStatus {
+  meeting_id: number;
+  current_holder?: {
+    participant_id: number;
+    participant_name: string;
+    claimed_at: string;
+  };
+  is_available: boolean;
 }
 
 export const tokensAPI = {
@@ -259,6 +326,14 @@ export const tokensAPI = {
   },
 
   /**
+   * Get current token status
+   * GET /tokens/meetings/{meeting_id}/status
+   */
+  getStatus: async (meetingId: number): Promise<TokenStatus> => {
+    return apiCall<TokenStatus>(`/tokens/meetings/${meetingId}/status`);
+  },
+
+  /**
    * Get token events for a meeting
    * GET /tokens/meetings/{meeting_id}/events
    */
@@ -277,6 +352,13 @@ export interface PhaseEvent {
   phase_name: string;
   started_by: number;
   timestamp?: string;
+}
+
+export interface PhaseStatus {
+  meeting_id: number;
+  current_phase: string;
+  started_at: string;
+  started_by: number;
 }
 
 export const phasesAPI = {
@@ -299,6 +381,22 @@ export const phasesAPI = {
         }),
       },
     );
+  },
+
+  /**
+   * Get current phase status
+   * GET /phases/meetings/{meeting_id}/current
+   */
+  getCurrent: async (meetingId: number): Promise<PhaseStatus> => {
+    return apiCall<PhaseStatus>(`/phases/meetings/${meetingId}/current`);
+  },
+
+  /**
+   * Get phase history
+   * GET /phases/meetings/{meeting_id}/history
+   */
+  getHistory: async (meetingId: number): Promise<PhaseEvent[]> => {
+    return apiCall<PhaseEvent[]>(`/phases/meetings/${meetingId}/history`);
   },
 };
 
@@ -343,8 +441,25 @@ export const annotationsAPI = {
    * List annotations for a meeting
    * GET /annotations/meetings/{meeting_id}
    */
-  list: async (meetingId: number): Promise<Annotation[]> => {
-    return apiCall<Annotation[]>(`/annotations/meetings/${meetingId}`);
+  list: async (meetingId: number, filters?: { annotation_type?: string; participant_id?: number }): Promise<Annotation[]> => {
+    const params = new URLSearchParams();
+    if (filters?.annotation_type) params.append('annotation_type', filters.annotation_type);
+    if (filters?.participant_id) params.append('participant_id', filters.participant_id.toString());
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/annotations/meetings/${meetingId}?${queryString}` : `/annotations/meetings/${meetingId}`;
+    
+    return apiCall<Annotation[]>(endpoint);
+  },
+
+  /**
+   * Delete an annotation
+   * DELETE /annotations/{annotation_id}
+   */
+  delete: async (annotationId: number): Promise<void> => {
+    return apiCall<void>(`/annotations/${annotationId}`, {
+      method: 'DELETE',
+    });
   },
 };
 
@@ -392,6 +507,35 @@ export const decisionsAPI = {
   list: async (meetingId: number): Promise<Decision[]> => {
     return apiCall<Decision[]>(`/decisions/meetings/${meetingId}`);
   },
+
+  /**
+   * Get a specific decision
+   * GET /decisions/{decision_id}
+   */
+  getById: async (decisionId: number): Promise<Decision> => {
+    return apiCall<Decision>(`/decisions/${decisionId}`);
+  },
+
+  /**
+   * Update a decision
+   * PUT /decisions/{decision_id}
+   */
+  update: async (decisionId: number, data: { title?: string; description?: string }): Promise<Decision> => {
+    return apiCall<Decision>(`/decisions/${decisionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete a decision
+   * DELETE /decisions/{decision_id}
+   */
+  delete: async (decisionId: number): Promise<void> => {
+    return apiCall<void>(`/decisions/${decisionId}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // ============================================
@@ -403,6 +547,17 @@ export interface MeetingStats {
   total_participants: number;
   average_speaking_time: number;
   token_claims: number;
+  total_duration_ms?: number;
+  phases_count?: number;
+  annotations_count?: number;
+  decisions_count?: number;
+  participant_stats?: Array<{
+    participant_id: number;
+    participant_name: string;
+    speaking_time_ms: number;
+    token_claims: number;
+    annotations_count: number;
+  }>;
   [key: string]: any;
 }
 
@@ -431,7 +586,181 @@ export const statsAPI = {
   getAudit: async (meetingId: number): Promise<AuditTrail[]> => {
     return apiCall<AuditTrail[]>(`/stats/meetings/${meetingId}/audit`);
   },
+
+  /**
+   * Export meeting data
+   * GET /stats/meetings/{meeting_id}/export
+   */
+  exportData: async (meetingId: number, format: 'json' | 'csv' = 'json'): Promise<Blob> => {
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/stats/meetings/${meetingId}/export?format=${format}`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, 'Export failed');
+    }
+
+    return response.blob();
+  },
 };
+
+// ============================================
+// USERS API
+// ============================================
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string;
+  language_preference: string;
+  is_active: boolean;
+}
+
+export interface UserUpdateData {
+  full_name?: string;
+  email?: string;
+  avatar_url?: string;
+  language_preference?: string;
+  password?: string;
+}
+
+export const usersAPI = {
+  /**
+   * Get current user profile
+   * GET /users/me
+   */
+  getProfile: async (): Promise<UserProfile> => {
+    return apiCall<UserProfile>('/users/me');
+  },
+
+  /**
+   * Update user profile
+   * PUT /users/me
+   */
+  updateProfile: async (data: UserUpdateData): Promise<UserProfile> => {
+    return apiCall<UserProfile>('/users/me', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete user account (GDPR)
+   * DELETE /users/me
+   */
+  deleteAccount: async (password: string): Promise<void> => {
+    return apiCall<void>('/users/me', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
+    });
+  },
+};
+
+// ============================================
+// WEBSOCKET HELPER
+// ============================================
+
+export interface WebSocketMessage {
+  type: string;
+  payload: any;
+  timestamp?: string;
+}
+
+export class MeetingWebSocket {
+  private ws: WebSocket | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
+  private messageHandlers: Map<string, Set<(payload: any) => void>> = new Map();
+
+  constructor(private meetingId: number) {}
+
+  connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem('auth_token');
+      const wsUrl = `ws://localhost:8000/ws/meetings/${this.meetingId}${token ? `?token=${token}` : ''}`;
+      
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        this.reconnectAttempts = 0;
+        resolve();
+      };
+
+      this.ws.onerror = (error) => {
+        reject(error);
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          this.handleMessage(message);
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      };
+
+      this.ws.onclose = () => {
+        this.attemptReconnect();
+      };
+    });
+  }
+
+  private handleMessage(message: WebSocketMessage): void {
+    const handlers = this.messageHandlers.get(message.type);
+    if (handlers) {
+      handlers.forEach(handler => handler(message.payload));
+    }
+  }
+
+  on(messageType: string, handler: (payload: any) => void): void {
+    if (!this.messageHandlers.has(messageType)) {
+      this.messageHandlers.set(messageType, new Set());
+    }
+    this.messageHandlers.get(messageType)!.add(handler);
+  }
+
+  off(messageType: string, handler: (payload: any) => void): void {
+    const handlers = this.messageHandlers.get(messageType);
+    if (handlers) {
+      handlers.delete(handler);
+    }
+  }
+
+  send(message: WebSocketMessage): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.error('WebSocket is not connected');
+    }
+  }
+
+  private attemptReconnect(): void {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      setTimeout(() => {
+        this.connect().catch(console.error);
+      }, this.reconnectDelay * this.reconnectAttempts);
+    }
+  }
+
+  disconnect(): void {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    this.messageHandlers.clear();
+  }
+}
 
 // ============================================
 // EXPORT ALL APIs
@@ -439,6 +768,7 @@ export const statsAPI = {
 
 export const api = {
   auth: authAPI,
+  users: usersAPI,
   meetings: meetingsAPI,
   tokens: tokensAPI,
   phases: phasesAPI,
@@ -446,3 +776,5 @@ export const api = {
   decisions: decisionsAPI,
   stats: statsAPI,
 };
+
+export default api;

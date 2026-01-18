@@ -181,3 +181,63 @@ export function useAuditTrail(meetingId: number) {
     enabled: meetingId > 0,
   });
 }
+// User Hooks
+export function useUserProfile() {
+  return useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: () => api.users.getProfile(),
+  });
+}
+
+export function useUpdateUserProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => api.users.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
+    },
+  });
+}
+
+export function useDeleteUserAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) => api.users.deleteAccount(password),
+    onSuccess: () => {
+      // Clear all user data on successful deletion
+      queryClient.clear();
+      localStorage.removeItem('auth_token');
+    },
+  });
+}
+
+export function useUserMeetings() {
+  return useQuery({
+    queryKey: ['meetings', 'user', 'created'],
+    queryFn: () => api.meetings.getUserCreatedMeetings?.(),
+  });
+}
+
+export function useUpdateMeeting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, data }: { meetingId: number; data: any }) =>
+      api.meetings.update?.(meetingId, data),
+    onSuccess: (_, { meetingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['meetings', meetingId] });
+      queryClient.invalidateQueries({ queryKey: ['meetings', 'user', 'created'] });
+    },
+  });
+}
+
+export function useDeleteMeeting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (meetingId: number) => api.meetings.delete?.(meetingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['meetings', 'user', 'created'] });
+    },
+  });
+}
