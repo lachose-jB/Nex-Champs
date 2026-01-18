@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from typing import Annotated
 from pydantic import BaseModel
+from sqlmodel import Session
 from backend.utils.auth import (
     create_access_token,
     get_current_active_user,
@@ -13,7 +14,7 @@ from backend.utils.auth import (
 )
 from backend.config import settings
 from backend.models.users import User as DBUser
-from backend.database import get_session
+from backend.database import get_session, get_db
 from sqlmodel import select
 
 router = APIRouter()
@@ -61,12 +62,11 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
 @router.post("/signup")
-async def signup(user_data: UserCreate):
-    session = get_session()
+async def signup(user_data: UserCreate, db: Session = Depends(get_db)):
 
     # Check if user already exists
     statement = select(DBUser).where(DBUser.email == user_data.email)
-    existing_user = session.exec(statement).first()
+    existing_user = db.exec(statement).first()
 
     if existing_user:
         raise HTTPException(
@@ -94,9 +94,9 @@ async def signup(user_data: UserCreate):
         role="participant"
     )
 
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
 
     # Create JWT token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

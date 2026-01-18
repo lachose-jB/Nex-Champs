@@ -4,7 +4,7 @@ from typing import List
 
 # Import from backend package
 from backend.models.meetings import Meeting, MeetingCreate, MeetingRead
-from backend.models.participants import Participant, ParticipantCreate
+from backend.models.participants import Participant, ParticipantCreate, ParticipantRead
 from backend.database import get_db
 from backend.utils.auth import get_current_active_user
 
@@ -53,3 +53,44 @@ def get_meeting(
     if not meeting:
         raise HTTPException(status_code=404, detail="Meeting not found")
     return meeting
+
+@router.post("/{meeting_id}/join", response_model=ParticipantRead)
+def join_meeting(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Join a meeting as a participant"""
+    # Check if meeting exists
+    meeting = db.query(Meeting).filter(Meeting.id == meeting_id).first()
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    # Check if user is already a participant
+    existing_participant = db.query(Participant).filter(
+        Participant.meeting_id == meeting_id,
+        Participant.user_id == current_user.username
+    ).first()
+
+    if existing_participant:
+        # Update existing participant if they left and want to rejoin
+        if not existing_participant.is_active:
+            existing_participant.is_active = True
+            db.commit()
+            db.refresh(existing_participant)
+        return existing_participant
+
+    # Create new participant
+    participant = Participant(
+        meeting_id=meeting_id,
+        user_id=current_user.username,
+        name=current_user.username,
+        role="participant",
+        is_active=True
+    )
+
+    db.add(participant)
+    db.commit()
+    db.refresh(participant)
+
+    return participant
