@@ -30,7 +30,7 @@ export default function Home() {
         name: title,
         description: description || undefined,
       });
-      setLocation(`/governance/${meeting.id}`);
+      setLocation(`/meeting/${meeting.id}/dashboard`);
     } catch (error) {
       console.error('Error creating meeting:', error);
     }
