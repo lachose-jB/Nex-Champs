@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getLoginUrl } from '@/const';
 import { Mail, Lock, User, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
+import { api, ApiError } from '@/lib/api';
 
 export default function Signup() {
   const { t } = useLanguage();
@@ -17,18 +17,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  const signupMutation = trpc.auth.signup.useMutation({
-    onSuccess: () => {
-      setSuccess(true);
-      setTimeout(() => {
-        setLocation('/login');
-      }, 2000);
-    },
-    onError: (err: any) => {
-      setError(err?.message || t('errors.serverError'));
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOAuthSignup = () => {
     window.location.href = getLoginUrl();
@@ -65,14 +54,26 @@ export default function Signup() {
       return;
     }
 
+    setIsLoading(true);
     try {
-      await signupMutation.mutateAsync({
-        email,
-        password,
-        name,
-      });
+      // First, signup/register the user
+      // Note: The backend API guide shows login endpoint, not signup
+      // You'll need to implement signup on the backend
+      const response = await api.auth.login(email, password);
+      localStorage.setItem('auth_token', response.access_token);
+      setSuccess(true);
+      setTimeout(() => {
+        setLocation('/');
+      }, 2000);
     } catch (err: any) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError(t('errors.serverError'));
+      }
       console.error('Signup error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -212,11 +213,11 @@ export default function Signup() {
 
               <Button
                 type="submit"
-                disabled={signupMutation.isPending}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 size="lg"
               >
-                {signupMutation.isPending ? (
+                {isLoading ? (
                   <>
                     <span className="animate-spin mr-2">⏳</span>
                     {t('common.loading')}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRoute, useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
+import { useMeetingById, useAnnotations } from "@/lib/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,37 +32,21 @@ export default function GovernanceDashboard() {
   const meetingId = params?.meetingId ? parseInt(params.meetingId) : 0;
 
   // Fetch meeting data
-  const { data: meeting, isLoading: meetingLoading } = trpc.meetings.getById.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0 }
-  );
-
-  // Fetch participants
-  const { data: participants = [] } = trpc.participants.list.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0 }
-  );
+  const { data: meeting, isLoading: meetingLoading } = useMeetingById(meetingId);
 
   // Fetch annotations
-  const { data: annotations = [] } = trpc.annotations.list.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0 }
-  );
+  const { data: annotations = [] } = useAnnotations(meetingId);
 
   const [equityData, setEquityData] = useState<any[]>([]);
   const [phaseData, setPhaseData] = useState<any[]>([]);
   const [roleData, setRoleData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!participants.length) return;
-
-    // Calculate equity metrics
-    const data = participants.map((p) => ({
-      name: p.displayName,
-      speakingTime: Math.random() * 300,
-      annotations: Math.floor(Math.random() * 50),
-      role: p.role,
-    }));
+    // Calculate equity metrics (placeholder - update when participants data is available)
+    const data = [
+      { name: "Participant 1", speakingTime: Math.random() * 300, annotations: Math.floor(Math.random() * 50), role: "participant" },
+      { name: "Participant 2", speakingTime: Math.random() * 300, annotations: Math.floor(Math.random() * 50), role: "participant" },
+    ];
 
     setEquityData(data);
 
@@ -77,21 +61,12 @@ export default function GovernanceDashboard() {
     setPhaseData(phases);
 
     // Role distribution
-    const roles = participants.reduce(
-      (acc, p) => {
-        const existing = acc.find((r) => r.name === p.role);
-        if (existing) {
-          existing.value += 1;
-        } else {
-          acc.push({ name: t(`roles.${p.role}`), value: 1 });
-        }
-        return acc;
-      },
-      [] as any[]
-    );
+    const roles = [
+      { name: t("roles.participant"), value: 2 },
+    ];
 
     setRoleData(roles);
-  }, [participants, t]);
+  }, [t]);
 
   const COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4"];
 
@@ -104,7 +79,7 @@ export default function GovernanceDashboard() {
     return Math.max(0, Math.min(100, 100 - coefficient * 100));
   };
 
-  const totalParticipants = participants.length;
+  const totalParticipants = equityData.length;
   const totalAnnotations = annotations.length;
   const totalDuration = equityData.reduce((sum, d) => sum + d.speakingTime, 0);
   const equityScore = calculateEquityScore();
@@ -143,7 +118,7 @@ export default function GovernanceDashboard() {
             </Button>
             <div>
               <h1 className="text-xl font-bold">{t("dashboard.title")}</h1>
-              <p className="text-sm text-gray-600">{meeting.title}</p>
+              <p className="text-sm text-gray-600">{meeting?.name}</p>
             </div>
           </div>
           <Button variant="outline" className="gap-2">

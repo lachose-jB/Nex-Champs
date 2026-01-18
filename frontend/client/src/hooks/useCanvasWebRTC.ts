@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CanvasWebRTCSync, CanvasOperation } from "@/lib/webrtc-canvas";
-import { trpc } from "@/lib/trpc";
+// Canvas operations are handled directly via WebRTC P2P
+// To persist operations, integrate with the backend API
 
 interface UseCanvasWebRTCOptions {
   participantId: number;
@@ -17,12 +18,10 @@ export const useCanvasWebRTC = (options: UseCanvasWebRTCOptions) => {
   const [operationHistory, setOperationHistory] = useState<CanvasOperation[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Fetch reconstructed Canvas state on mount
-  const { data: reconstructedState, isLoading: isReconstructing } =
-    trpc.canvas.reconstructState.useQuery({ meetingId });
-
-  // Mutation to save operations to database
-  const saveOperationMutation = trpc.canvas.saveOperation.useMutation();
+  // Canvas state management
+  // To persist operations to backend, use the API client:
+  // import { api } from '@/lib/api';
+  // await api.annotations.create(meetingId, { ... });
 
   // Initialize WebRTC sync and load persisted operations
   useEffect(() => {
@@ -32,37 +31,24 @@ export const useCanvasWebRTC = (options: UseCanvasWebRTCOptions) => {
         // Initialize WebRTC sync
         const sync = new CanvasWebRTCSync(participantId, meetingId);
 
-        // Load persisted operations from database
-        if (reconstructedState?.operations) {
-          const convertedOps = reconstructedState.operations.map((op: any) => ({
-            id: op.operationId,
-            timestamp: op.timestamp,
-            participantId: op.participantId,
-            type: op.operationType,
-            data: op.operationData || {},
-            version: op.version,
-          }));
-          setOperationHistory(convertedOps);
-          console.log(
-            `[Canvas] Loaded ${reconstructedState.totalOperations} persisted operations`
-          );
-        }
+        // Load persisted operations from backend if needed
+        // For now, start with an empty operation history
+        // To load from backend: const annotations = await api.annotations.list(meetingId);
+        setOperationHistory([]);
 
         // Register callbacks
         sync.onOperation((op) => {
           setOperationHistory((prev) => [...prev, op]);
           onOperation?.(op);
 
-          // Save operation to database for persistence
-          saveOperationMutation.mutate({
-            meetingId,
-            participantId,
-            operationType: op.type,
-            operationData: op.data,
-            version: op.version,
-            operationId: op.id,
-            timestamp: op.timestamp,
-          });
+          // Save operation to backend for persistence if needed
+          // Uncomment when you have the annotation API endpoint ready
+          // await api.annotations.create(meetingId, {
+          //   participant_id: participantId,
+          //   annotation_type: op.type,
+          //   content: JSON.stringify(op.data),
+          //   timestamp_ms: op.timestamp
+          // });
         });
 
         sync.onError((error) => {
@@ -97,7 +83,7 @@ export const useCanvasWebRTC = (options: UseCanvasWebRTCOptions) => {
     return () => {
       syncRef.current?.closeConnections();
     };
-  }, [meetingId, participantId, reconstructedState, onOperation, onError, saveOperationMutation]);
+  }, [meetingId, participantId, onOperation, onError]);
 
   const addOperation = (operation: CanvasOperation) => {
     if (syncRef.current) {
@@ -126,7 +112,7 @@ export const useCanvasWebRTC = (options: UseCanvasWebRTCOptions) => {
     isConnected,
     connectedPeers: Array.from(connectedPeers),
     operationHistory,
-    isSyncing: isSyncing || isReconstructing,
+    isSyncing,
     addOperation,
     requestSync,
     clear,

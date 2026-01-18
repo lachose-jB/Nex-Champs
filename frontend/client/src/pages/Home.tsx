@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { trpc } from "@/lib/trpc";
+import { useCreateMeeting } from "@/lib/hooks";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,21 +19,21 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  const createMeetingMutation = trpc.meetings.create.useMutation({
-  onSuccess: (data) => {
-    // redirection vers GovernanceDashboard avec l’ID du meeting créé
-    setLocation(`/governance/${data.meetingId}`);
-  },
-});
+  const createMeetingMutation = useCreateMeeting();
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    await createMeetingMutation.mutateAsync({
-      title,
-      description: description || undefined,
-    });
+    try {
+      const meeting = await createMeetingMutation.mutateAsync({
+        name: title,
+        description: description || undefined,
+      });
+      setLocation(`/governance/${meeting.id}`);
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+    }
   };
 
   if (loading) {
@@ -102,7 +102,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <div className="text-sm text-gray-600">
-              {t("common.welcome")}, <span className="font-semibold">{user?.name}</span>
+              {t("common.welcome")}, <span className="font-semibold">{user?.username}</span>
             </div>
           </div>
         </div>

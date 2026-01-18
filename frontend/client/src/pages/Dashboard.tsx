@@ -1,6 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,20 +7,13 @@ import { Crown, LogOut, Plus } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function Dashboard() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
 
-  const utils = trpc.useUtils();
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: async () => {
-      await utils.auth.me.invalidate();
-      setLocation("/");
-    },
-  });
-
   const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
+    await logout();
+    setLocation("/login");
   };
 
   if (loading) {
@@ -57,17 +49,16 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <div className="text-sm text-gray-400">
-              {t("common.welcome")}, <span className="font-semibold text-white">{user?.name}</span>
+              {t("common.welcome")}, <span className="font-semibold text-white">{user?.username}</span>
             </div>
             <Button
               onClick={handleLogout}
-              disabled={logoutMutation.isPending}
               variant="outline"
               size="sm"
               className="gap-2"
             >
               <LogOut className="w-4 h-4" />
-              {logoutMutation.isPending ? t("common.loading") : t("auth.logout")}
+              {t("auth.logout")}
             </Button>
           </div>
         </div>
@@ -79,7 +70,7 @@ export default function Dashboard() {
           {/* Welcome Card */}
           <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
             <CardHeader>
-              <CardTitle className="text-white">{t("common.welcome")}, {user?.name}!</CardTitle>
+              <CardTitle className="text-white">{t("common.welcome")}, {user?.username}!</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-300 mb-6">

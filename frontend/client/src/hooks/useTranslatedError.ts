@@ -1,57 +1,48 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TRPCClientError } from "@trpc/client";
-import type { AppRouter } from "../../../server/routers";
+import { ApiError } from "@/lib/api";
 
 export const useTranslatedError = () => {
   const { t } = useLanguage();
 
   const translateError = (error: unknown): string => {
-    if (error instanceof TRPCClientError) {
-      const code = error.data?.code;
-      const message = error.message;
-
-      // Map des erreurs tRPC vers les clés de traduction
-      const errorMap: Record<string, string> = {
-        PARSE_ERROR: "errors.unknownError",
-        BAD_REQUEST: "errors.serverError",
-        INTERNAL_SERVER_ERROR: "errors.serverError",
-        UNAUTHORIZED: "errors.unauthorized",
-        FORBIDDEN: "errors.permissionDenied",
-        NOT_FOUND: "errors.meetingNotFound",
-        CONFLICT: "errors.tokenAlreadyHeld",
-        PRECONDITION_FAILED: "errors.invalidPhaseTransition",
-        PAYLOAD_TOO_LARGE: "errors.serverError",
-        METHOD_NOT_SUPPORTED: "errors.serverError",
-        CLIENT_CLOSED_REQUEST: "errors.networkError",
+    if (error instanceof ApiError) {
+      // Map des erreurs API HTTP vers les clés de traduction
+      const errorMap: Record<number, string> = {
+        400: "errors.serverError",
+        401: "errors.unauthorized",
+        403: "errors.permissionDenied",
+        404: "errors.meetingNotFound",
+        409: "errors.tokenAlreadyHeld",
+        412: "errors.invalidPhaseTransition",
+        413: "errors.serverError",
+        500: "errors.serverError",
       };
 
-      // Chercher une traduction basée sur le code d'erreur
-      if (code && errorMap[code]) {
-        return t(errorMap[code]);
+      // Chercher une traduction basée sur le code de statut HTTP
+      if (errorMap[error.statusCode]) {
+        return t(errorMap[error.statusCode]);
       }
 
-      // Chercher une traduction basée sur le message d'erreur
-      if (message.includes("Token")) {
-        return t("errors.tokenError");
-      }
-      if (message.includes("annotation")) {
-        return t("errors.annotationError");
-      }
-      if (message.includes("recording")) {
-        return t("errors.recordingError");
-      }
-      if (message.includes("phase")) {
-        return t("errors.phaseTransitionError");
-      }
-      if (message.includes("permission")) {
-        return t("errors.permissionDenied");
-      }
-
-      // Retourner le message d'erreur par défaut
-      return message || t("errors.unknownError");
+      return error.message || t("errors.unknownError");
     }
 
     if (error instanceof Error) {
+      // Map des erreurs par keywords
+      if (error.message.includes("Token")) {
+        return t("errors.tokenError");
+      }
+      if (error.message.includes("annotation")) {
+        return t("errors.annotationError");
+      }
+      if (error.message.includes("recording")) {
+        return t("errors.recordingError");
+      }
+      if (error.message.includes("phase")) {
+        return t("errors.phaseTransitionError");
+      }
+      if (error.message.includes("permission")) {
+        return t("errors.permissionDenied");
+      }
       return error.message;
     }
 

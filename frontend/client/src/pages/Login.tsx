@@ -6,27 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getLoginUrl } from '@/const';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
+import { api, ApiError } from '@/lib/api';
 
 export default function Login() {
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  const utils = trpc.useUtils();
-  const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: async () => {
-      // Invalider le cache de l'utilisateur courant pour forcer la mise à jour
-      await utils.auth.me.invalidate();
-      // Rediriger vers le dashboard
-      setLocation('/');
-    },
-    onError: (err: any) => {
-      setError(err?.message || t('errors.serverError'));
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOAuthLogin = () => {
     window.location.href = getLoginUrl();
@@ -36,7 +24,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
-    if (!email.trim()) {
+    if (!username.trim()) {
       setError(t('auth.emailRequired'));
       return;
     }
@@ -46,13 +34,19 @@ export default function Login() {
       return;
     }
 
+    setIsLoading(true);
     try {
-      await loginMutation.mutateAsync({
-        email,
-        password,
-      });
-    } catch (err: any) {
-      console.error('Login error:', err);
+      const response = await api.auth.login(username, password);
+      localStorage.setItem('auth_token', response.access_token);
+      setLocation('/');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError(t('errors.serverError'));
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,10 +122,10 @@ export default function Login() {
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                   <Input
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    placeholder="admin"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
                     required
                   />
@@ -155,11 +149,11 @@ export default function Login() {
 
               <Button
                 type="submit"
-                disabled={loginMutation.isPending}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 size="lg"
               >
-                {loginMutation.isPending ? (
+                {isLoading ? (
                   <>
                     <span className="animate-spin mr-2">⏳</span>
                     {t('common.loading')}

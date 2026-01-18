@@ -5,7 +5,7 @@ import { useTranslatedError } from "@/hooks/useTranslatedError";
 import { useTranslatedNotifications } from "@/hooks/useTranslatedNotifications";
 import { useCanvasWebRTC } from "@/hooks/useCanvasWebRTC";
 import { useRoute, useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
+import { useMeetingById, useTokenEvents } from "@/lib/hooks";
 import { Canvas } from "@/components/Canvas";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { VideoRecorder } from "@/components/VideoRecorder";
@@ -44,22 +44,10 @@ export default function MeetingRoom() {
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
 
   // Fetch meeting data
-  const { data: meeting, isLoading: meetingLoading } = trpc.meetings.getById.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0 }
-  );
+  const { data: meeting, isLoading: meetingLoading } = useMeetingById(meetingId);
 
-  // Fetch participants
-  const { data: participants = [] } = trpc.participants.list.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0 }
-  );
-
-  // Get token state
-  const { data: tokenState } = trpc.token.getState.useQuery(
-    { meetingId },
-    { enabled: meetingId > 0, refetchInterval: 1000 }
-  );
+  // Fetch token events
+  const { data: tokenEvents = [] } = useTokenEvents(meetingId);
 
   // WebRTC Canvas Sync
   const {
@@ -82,25 +70,15 @@ export default function MeetingRoom() {
     },
   });
 
-  // Pass token mutation
-  const passTokenMutation = trpc.token.passToken.useMutation({
-    onSuccess: () => {
-      notify({ type: "tokenReceived" });
-    },
-    onError: (error: any) => {
-      toast.error(translateError(error));
-    },
-  });
+  // Pass token mutation (placeholder - would need backend implementation)
+  // const passTokenMutation = (participantId: number) => {
+  //   // TODO: Implement via api.tokens.passToken()
+  // };
 
-  // Release token mutation
-  const releaseTokenMutation = trpc.token.releaseToken.useMutation({
-    onSuccess: () => {
-      notify({ type: "tokenExpired" });
-    },
-    onError: (error: any) => {
-      toast.error(translateError(error));
-    },
-  });
+  // Release token mutation (placeholder - would need backend implementation)
+  // const releaseTokenMutation = () => {
+  //   // TODO: Implement via api.tokens.releaseToken()
+  // };
 
   // Change phase mutation (placeholder - would need backend implementation)
   // const changePhaseMutation = trpc.meetings.updatePhase.useMutation({
@@ -115,13 +93,22 @@ export default function MeetingRoom() {
   //   },
   // });
 
-  // Listen for token state changes
+  // Listen for token events
   useEffect(() => {
-    if (!tokenState) return;
+    if (!tokenEvents || tokenEvents.length === 0) return;
+
+    // Get the latest token event
+    const latestEvent = tokenEvents[tokenEvents.length - 1];
+
+    // Determine current token holder based on latest event
+    let newHolderId: number | null = null;
+    if (latestEvent.event_type === 'claim') {
+      newHolderId = latestEvent.participant_id;
+    }
 
     // Notify when token holder changes
-    if (tokenState.tokenHolderId !== meetingState.tokenHolderId) {
-      if (tokenState.tokenHolderId === user?.id) {
+    if (newHolderId !== meetingState.tokenHolderId) {
+      if (newHolderId === user?.id) {
         notify({ type: "tokenReceived" });
       } else if (meetingState.tokenHolderId === user?.id) {
         notify({ type: "tokenExpired" });
@@ -129,50 +116,16 @@ export default function MeetingRoom() {
 
       setMeetingState((prev) => ({
         ...prev,
-        tokenHolderId: tokenState.tokenHolderId,
+        tokenHolderId: newHolderId,
         tokenStartTime: Date.now(),
       }));
     }
+  }, [tokenEvents, meetingState.tokenHolderId, user?.id, notify]);
 
-    // Notify when phase changes
-    if (tokenState.currentPhase !== meetingState.currentPhase) {
-      notify({
-        type: "phaseStarted",
-        data: { phase: tokenState.currentPhase },
-      });
-
-      setMeetingState((prev) => ({
-        ...prev,
-        currentPhase: tokenState.currentPhase,
-        phaseStartTime: Date.now(),
-      }));
-    }
-  }, [tokenState, meetingState.tokenHolderId, meetingState.currentPhase, user?.id, notify]);
-
-  // Connect to peers when participants change
-  useEffect(() => {
-    if (!isCanvasConnected && participants.length > 1) {
-      participants.forEach((p) => {
-        if (p.id !== user?.id && !connectedPeers.includes(p.id)) {
-          // Peer connection will be handled by WebRTC signaling
-        }
-      });
-    }
-  }, [participants, user?.id, isCanvasConnected, connectedPeers]);
-
-  // Notify when participants join/leave
-  useEffect(() => {
-    if (participants.length > 0) {
-      participants.forEach((p) => {
-        if (p.id !== user?.id) {
-          notify({
-            type: "participantJoined",
-            data: { name: p.displayName },
-          });
-        }
-      });
-    }
-  }, [participants, user?.id, notify]);
+  // Notify when participants join/leave (placeholder for future API support)
+  // useEffect(() => {
+  //   // TODO: Implement when API provides participant list
+  // }, [user?.id, notify]);
 
   const phases = ["ideation", "clarification", "decision", "feedback"];
   const currentPhaseIndex = phases.indexOf(meetingState.currentPhase);
@@ -208,14 +161,13 @@ export default function MeetingRoom() {
   };
 
   const handlePassToken = (participantId: number) => {
-    passTokenMutation.mutate({
-      meetingId,
-      nextParticipantId: participantId,
-    });
+    // TODO: Implement via api.tokens.passToken()
+    console.log("Pass token to:", participantId);
   };
 
   const handleReleaseToken = () => {
-    releaseTokenMutation.mutate({ meetingId });
+    // TODO: Implement via api.tokens.releaseToken()
+    console.log("Release token");
   };
 
   const handleAnnotation = (annotation: any) => {
@@ -252,7 +204,7 @@ export default function MeetingRoom() {
     );
   }
 
-  const isTokenHolder = tokenState?.tokenHolderId === (user?.id || null);
+  const isTokenHolder = meetingState.tokenHolderId === (user?.id || null);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -270,7 +222,7 @@ export default function MeetingRoom() {
               {t("common.back")}
             </Button>
             <div>
-              <h1 className="text-xl font-bold">{meeting.title}</h1>
+              <h1 className="text-xl font-bold">{meeting?.name}</h1>
               <p className="text-sm text-gray-600">{meeting.description}</p>
             </div>
           </div>
@@ -358,11 +310,11 @@ export default function MeetingRoom() {
           <div className="space-y-6">
             {/* Token Display */}
             <TokenDisplay
-              tokenHolderId={tokenState?.tokenHolderId || null}
-              tokenHolderName={participants.find((p) => p.id === tokenState?.tokenHolderId)?.displayName}
+              tokenHolderId={meetingState.tokenHolderId}
+              tokenHolderName="TBD"
               tokenStartTime={meetingState.tokenStartTime}
               currentPhase={meetingState.currentPhase}
-              participants={participants}
+              participants={[]}
             />
 
             {/* Phase Indicator */}
@@ -408,24 +360,8 @@ export default function MeetingRoom() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {participants.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{p.displayName}</p>
-                        <p className="text-xs text-gray-600">{t(`roles.${p.role}`)}</p>
-                      </div>
-                      {isTokenHolder && p.id !== user?.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePassToken(p.id)}
-                          disabled={passTokenMutation.isPending}
-                        >
-                          {t("meeting.passToken")}
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                  {/* TODO: Implement when API provides participant list */}
+                  <p className="text-sm text-gray-600">{t("common.loading")}</p>
                 </div>
               </CardContent>
             </Card>
