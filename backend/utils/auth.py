@@ -22,8 +22,10 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    user_id: Optional[int] = None
 
 class User(BaseModel):
+    id: Optional[int] = None
     username: str
     email: Optional[str] = None
     full_name: Optional[str] = None
@@ -63,6 +65,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
+    """
+    Validate JWT token and extract user info
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -71,17 +76,21 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
+        user_id: int = payload.get("user_id")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(username=username, user_id=user_id)
     except JWTError:
         raise credentials_exception
 
-    # In a real implementation, you would fetch the user from database
-    user = User(username=token_data.username)
+    # Return user info extracted from token
+    user = User(id=token_data.user_id, username=token_data.username, disabled=False)
     return user
 
 def get_current_active_user(current_user: User = Depends(get_current_user)):
+    """
+    Check that the user is active
+    """
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user

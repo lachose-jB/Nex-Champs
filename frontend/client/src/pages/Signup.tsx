@@ -59,7 +59,7 @@ export default function Signup() {
       // First, signup/register the user
       // Note: The backend API guide shows login endpoint, not signup
       // You'll need to implement signup on the backend
-      const response = await api.auth.login(email, password);
+      const response = await api.auth.signup({ name, email, password });
       localStorage.setItem('auth_token', response.access_token);
       setSuccess(true);
       setTimeout(() => {

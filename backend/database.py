@@ -15,20 +15,15 @@ from backend.config import settings
 # Database engine
 engine = create_engine(settings.DATABASE_URL, echo=True)
 
-# Session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Function to get a database session
+# Function to get a database session (SQLModel Session with exec support)
 def get_session():
-    return SessionLocal()
+    with Session(engine) as session:
+        yield session
 
-# Dependency to get DB session
+# Dependency to get DB session (alias for backward compatibility)
 def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    with Session(engine) as session:
+        yield session
 
 # Initialize database
 def init_db():

@@ -13,4 +13,4 @@ __license__ = "MIT"
 # Import main components
 from backend.main import app
 from backend.config import settings
-from backend.database import init_db, SessionLocal, engine
+from backend.database import init_db, get_session, engine

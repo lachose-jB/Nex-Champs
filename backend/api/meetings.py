@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from typing import List
 
-# Import from backend package
 from backend.models.meetings import Meeting, MeetingCreate, MeetingRead
-from backend.models.participants import Participant, ParticipantCreate, ParticipantRead
+from backend.models.participants import Participant, ParticipantRead
 from backend.database import get_db
 from backend.utils.auth import get_current_active_user
 
@@ -17,7 +16,7 @@ def create_meeting(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Create a new meeting"""
-    db_meeting = Meeting.from_orm(meeting)
+    db_meeting = Meeting(**meeting.dict())
     db.add(db_meeting)
     db.commit()
     db.refresh(db_meeting)
@@ -27,10 +26,12 @@ def create_meeting(
         meeting_id=db_meeting.id,
         user_id=current_user.username,
         name=current_user.username,
-        role="facilitator"
+        role="facilitator",
+        is_active=True
     )
     db.add(facilitator)
     db.commit()
+    db.refresh(facilitator)
 
     return db_meeting
 
@@ -40,7 +41,8 @@ def get_meetings(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Get all meetings"""
-    return db.query(Meeting).all()
+    meetings = db.query(Meeting).all()
+    return meetings  # renvoie [] si aucun meeting
 
 @router.get("/{meeting_id}", response_model=MeetingRead)
 def get_meeting(
@@ -73,7 +75,6 @@ def join_meeting(
     ).first()
 
     if existing_participant:
-        # Update existing participant if they left and want to rejoin
         if not existing_participant.is_active:
             existing_participant.is_active = True
             db.commit()
@@ -88,7 +89,6 @@ def join_meeting(
         role="participant",
         is_active=True
     )
-
     db.add(participant)
     db.commit()
     db.refresh(participant)
