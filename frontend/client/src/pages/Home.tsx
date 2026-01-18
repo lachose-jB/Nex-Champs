@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCreateMeeting } from "@/lib/hooks";
+import { useCreateMeeting, useMeetings, useJoinMeeting } from "@/lib/hooks";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +16,15 @@ export default function Home() {
   const { language, t } = useLanguage();
   const [, setLocation] = useLocation();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showJoinForm, setShowJoinForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [joinName, setJoinName] = useState("");
+  const [selectedMeetingId, setSelectedMeetingId] = useState<number | null>(null);
 
   const createMeetingMutation = useCreateMeeting();
+  const joinMeetingMutation = useJoinMeeting();
+  const meetingsQuery = useMeetings();
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +35,27 @@ export default function Home() {
         name: title,
         description: description || undefined,
       });
-      setLocation(`/meeting/${meeting.id}/dashboard`);
+      setLocation(`/meeting/${meeting.id}`);
     } catch (error) {
       console.error('Error creating meeting:', error);
+    }
+  };
+
+  const handleJoinMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMeetingId || !joinName.trim()) return;
+
+    try {
+      await joinMeetingMutation.mutateAsync({
+        meetingId: selectedMeetingId,
+        data: {
+          name: joinName,
+          role: 'participant',
+        },
+      });
+      setLocation(`/meeting/${selectedMeetingId}`);
+    } catch (error) {
+      console.error('Error joining meeting:', error);
     }
   };
 
@@ -227,6 +250,91 @@ export default function Home() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowCreateForm(false)}
+                >
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+
+        {/* Join Meeting Section */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-12">
+          <h3 className="text-2xl font-bold mb-6">Rejoindre une réunion</h3>
+
+          {!showJoinForm ? (
+            <Button
+              size="lg"
+              onClick={() => setShowJoinForm(true)}
+              variant="outline"
+            >
+              Rejoindre une réunion
+            </Button>
+          ) : (
+            <form onSubmit={handleJoinMeeting} className="space-y-4 max-w-md">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sélectionner une réunion
+                </label>
+                {meetingsQuery.isLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  </div>
+                ) : meetingsQuery.data && meetingsQuery.data.length > 0 ? (
+                  <select
+                    value={selectedMeetingId || ''}
+                    onChange={(e) => setSelectedMeetingId(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    required
+                  >
+                    <option value="">-- Choisir une réunion --</option>
+                    {meetingsQuery.data.map((meeting) => (
+                      <option key={meeting.id} value={meeting.id}>
+                        {meeting.name} (ID: {meeting.id})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-gray-500">Aucune réunion disponible</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Votre nom dans la réunion
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Entrez votre nom"
+                  value={joinName}
+                  onChange={(e) => setJoinName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={joinMeetingMutation.isPending || !selectedMeetingId || !joinName.trim()}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {joinMeetingMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Connexion...
+                    </>
+                  ) : (
+                    'Rejoindre'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowJoinForm(false);
+                    setSelectedMeetingId(null);
+                    setJoinName("");
+                  }}
                 >
                   {t("common.cancel")}
                 </Button>

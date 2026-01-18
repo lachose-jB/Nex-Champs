@@ -84,7 +84,14 @@
     "moveToNextPhase": "Passer à la phase suivante",
     "moveToPreviousPhase": "Retourner à la phase précédente",
     "endMeeting": "Terminer la réunion",
-    "leaveMeeting": "Quitter la réunion"
+    "leaveMeeting": "Quitter la réunion",
+    "invite": "Inviter",
+    "hasToken": "A le Token",
+    "noParticipants": "Pas encore de participants",
+    "syncStatus": "État de la synchronisation",
+    "syncRequested": "Synchronisation demandée",
+    "requestSync": "Demander la synchronisation",
+    "connectedPeers": "Pairs connectés"
   },
   "canvas": {
     "penTool": "Outil stylo",

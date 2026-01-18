@@ -133,6 +133,15 @@ export interface Meeting {
   status?: string;
 }
 
+export interface Participant {
+  id: number;
+  user_id: string;
+  name: string;
+  role: 'participant' | 'facilitator' | 'observer';
+  is_active: boolean;
+  meeting_id: number;
+}
+
 export const meetingsAPI = {
   /**
    * Create a new meeting
@@ -159,6 +168,46 @@ export const meetingsAPI = {
    */
   getById: async (meetingId: number): Promise<Meeting> => {
     return apiCall<Meeting>(`/meetings/${meetingId}`);
+  },
+
+  /**
+   * Join an existing meeting
+   * POST /meetings/{id}/join
+   */
+  join: async (meetingId: number, data: { name: string; role?: string }): Promise<{ message: string; meeting_id: number }> => {
+    return apiCall<{ message: string; meeting_id: number }>(`/meetings/${meetingId}/join`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Get participants for a meeting
+   * GET /meetings/{id}/participants
+   */
+  getParticipants: async (meetingId: number): Promise<Participant[]> => {
+    return apiCall<Participant[]>(`/meetings/${meetingId}/participants`);
+  },
+
+  /**
+   * Leave a meeting
+   * POST /meetings/{id}/leave
+   */
+  leave: async (meetingId: number): Promise<{ message: string; meeting_id: number }> => {
+    return apiCall<{ message: string; meeting_id: number }>(`/meetings/${meetingId}/leave`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Invite a participant to a meeting
+   * POST /meetings/{id}/invite
+   */
+  invite: async (meetingId: number, data: { name: string; role?: string; email?: string }): Promise<any> => {
+    return apiCall<any>(`/meetings/${meetingId}/invite`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };
 

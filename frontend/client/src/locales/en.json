@@ -84,7 +84,14 @@
     "moveToNextPhase": "Move to next phase",
     "moveToPreviousPhase": "Move to previous phase",
     "endMeeting": "End Meeting",
-    "leaveMeeting": "Leave Meeting"
+    "leaveMeeting": "Leave Meeting",
+    "invite": "Invite",
+    "hasToken": "Has Token",
+    "noParticipants": "No participants yet",
+    "syncStatus": "Sync Status",
+    "syncRequested": "Sync requested",
+    "requestSync": "Request Sync",
+    "connectedPeers": "Connected Peers"
   },
   "canvas": {
     "penTool": "Pen Tool",

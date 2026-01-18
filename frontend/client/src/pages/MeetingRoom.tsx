@@ -5,14 +5,15 @@ import { useTranslatedError } from "@/hooks/useTranslatedError";
 import { useTranslatedNotifications } from "@/hooks/useTranslatedNotifications";
 import { useCanvasWebRTC } from "@/hooks/useCanvasWebRTC";
 import { useRoute, useLocation } from "wouter";
-import { useMeetingById, useTokenEvents } from "@/lib/hooks";
+import { useMeetingById, useTokenEvents, useLeaveMeeting, useMeetingParticipants } from "@/lib/hooks";
 import { Canvas } from "@/components/Canvas";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { VideoRecorder } from "@/components/VideoRecorder";
+import { InviteParticipantModal } from "@/components/InviteParticipantModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Mic, MicOff, Video, VideoOff, ArrowLeft, Wifi, WifiOff } from "lucide-react";
+import { Loader2, Mic, MicOff, Video, VideoOff, ArrowLeft, Wifi, WifiOff, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 interface MeetingState {
@@ -42,12 +43,19 @@ export default function MeetingRoom() {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Fetch meeting data
   const { data: meeting, isLoading: meetingLoading } = useMeetingById(meetingId);
 
   // Fetch token events
   const { data: tokenEvents = [] } = useTokenEvents(meetingId);
+
+  // Fetch participants
+  const { data: participants = [] } = useMeetingParticipants(meetingId);
+
+  // Leave meeting mutation
+  const leaveMeetingMutation = useLeaveMeeting();
 
   // WebRTC Canvas Sync
   const {
@@ -170,6 +178,16 @@ export default function MeetingRoom() {
     console.log("Release token");
   };
 
+  const handleLeaveMeeting = async () => {
+    try {
+      await leaveMeetingMutation.mutateAsync(meetingId);
+      setLocation("/");
+    } catch (error) {
+      console.error('Error leaving meeting:', error);
+      toast.error(t("errors.leaveMeetingError") || "Failed to leave meeting");
+    }
+  };
+
   const handleAnnotation = (annotation: any) => {
     // Add annotation to Canvas
     addOperation({
@@ -266,6 +284,21 @@ export default function MeetingRoom() {
             >
               {isRecording ? t("meeting.stopRecording") : t("meeting.startRecording")}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLeaveMeeting}
+              disabled={leaveMeetingMutation.isPending}
+              className="gap-2 text-red-600 hover:text-red-700"
+            >
+              {leaveMeetingMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </>
+              ) : (
+                "Quitter"
+              )}
+            </Button>
           </div>
         </div>
       </header>
@@ -355,13 +388,35 @@ export default function MeetingRoom() {
 
             {/* Participants */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-sm">{t("meeting.participants")}</CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowInviteModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  {t("meeting.invite")}
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {/* TODO: Implement when API provides participant list */}
-                  <p className="text-sm text-gray-600">{t("common.loading")}</p>
+                  {participants && participants.length > 0 ? (
+                    participants.map((participant: any) => (
+                      <div key={participant.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div>
+                          <p className="text-sm font-medium">{participant.user_name || participant.name}</p>
+                          <p className="text-xs text-gray-500">{participant.role}</p>
+                        </div>
+                        {participant.user_id === meetingState.tokenHolderId && (
+                          <Badge className="bg-blue-100 text-blue-800">{t("meeting.hasToken")}</Badge>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-600">{t("meeting.noParticipants")}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -395,6 +450,18 @@ export default function MeetingRoom() {
           </div>
         </div>
       </main>
+
+      {/* Invite Participant Modal */}
+      {showInviteModal && (
+        <InviteParticipantModal
+          meetingId={meetingId}
+          onClose={() => setShowInviteModal(false)}
+          onSuccess={() => {
+            setShowInviteModal(false);
+            // Participants list will be automatically refetched by React Query
+          }}
+        />
+      )}
     </div>
   );
 }

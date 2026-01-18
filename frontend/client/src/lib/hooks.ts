@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
-import type { Meeting, User } from './api';
+import type { Meeting, User, Participant } from './api';
 
 // Meetings Hooks
 export function useMeetings() {
@@ -26,6 +26,49 @@ export function useCreateMeeting() {
       api.meetings.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meetings'] });
+    },
+  });
+}
+
+export function useJoinMeeting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, data }: { meetingId: number; data: { name: string; role?: string } }) =>
+      api.meetings.join(meetingId, data),
+    onSuccess: (_, { meetingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['meetings', meetingId, 'participants'] });
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+    },
+  });
+}
+
+export function useMeetingParticipants(meetingId: number) {
+  return useQuery({
+    queryKey: ['meetings', meetingId, 'participants'],
+    queryFn: () => api.meetings.getParticipants(meetingId),
+    enabled: meetingId > 0,
+    refetchInterval: 3000, // Refetch every 3 seconds
+  });
+}
+
+export function useLeaveMeeting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (meetingId: number) =>
+      api.meetings.leave(meetingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+    },
+  });
+}
+
+export function useInviteParticipant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, data }: { meetingId: number; data: { name: string; role?: string; email?: string } }) =>
+      api.meetings.invite(meetingId, data),
+    onSuccess: (_, { meetingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['meetings', meetingId, 'participants'] });
     },
   });
 }
