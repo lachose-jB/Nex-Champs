@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1768625833244,
+      "tag": "0000_famous_iron_fist",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1768625997492,
+      "tag": "0001_certain_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768630808128,
+      "tag": "0002_misty_hemingway",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1768631665227,
+      "tag": "0003_parallel_winter_soldier",
+      "breakpoints": true
+    }
+  ]
+}
