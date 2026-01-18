@@ -20,10 +20,11 @@ export default function Home() {
   const [description, setDescription] = useState("");
 
   const createMeetingMutation = trpc.meetings.create.useMutation({
-    onSuccess: (data) => {
-      setLocation(`/meeting/${data.meetingId}`);
-    },
-  });
+  onSuccess: (data) => {
+    // redirection vers GovernanceDashboard avec l’ID du meeting créé
+    setLocation(`/governance/${data.meetingId}`);
+  },
+});
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +90,7 @@ export default function Home() {
     );
   }
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
@@ -257,5 +258,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-  );
+    );
 }

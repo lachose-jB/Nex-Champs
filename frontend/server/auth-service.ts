@@ -13,6 +13,7 @@ export interface AuthCredentials {
 }
 
 export interface AuthResult {
+  id(id: any): unknown;
   userId: number;
   email: string;
   name: string;
