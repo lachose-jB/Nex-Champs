@@ -1,15 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
+from typing import Annotated
+from pydantic import BaseModel
 from backend.utils.auth import (
     create_access_token,
     get_current_active_user,
     Token,
     User,
+    hash_password,
+    verify_password,
 )
 from backend.config import settings
+from backend.models.users import User as DBUser
+from backend.database import get_session
+from sqlmodel import select
 
 router = APIRouter()
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    full_name: str
 
 # Mock user database - in production, this would be a real database
 fake_users_db = {
@@ -47,3 +59,59 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @router.get("/users/me/", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
+
+@router.post("/signup")
+async def signup(user_data: UserCreate):
+    session = get_session()
+
+    # Check if user already exists
+    statement = select(DBUser).where(DBUser.email == user_data.email)
+    existing_user = session.exec(statement).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+    # Validate password
+    try:
+        validate_password(user_data.password)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+    # Hash the password
+    hashed_password = hash_password(user_data.password)
+
+    # Create new user
+    new_user = DBUser(
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name,
+        role="participant"
+    )
+
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    # Create JWT token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user_data.email, "user_id": str(new_user.id)},
+        expires_delta=access_token_expires
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": new_user.id,
+            "email": new_user.email,
+            "full_name": new_user.full_name,
+            "role": new_user.role
+        }
+    }

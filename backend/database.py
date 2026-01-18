@@ -8,6 +8,7 @@ from .models.tokens import TokenEvent
 from .models.phases import Phase
 from .models.annotations import Annotation
 from .models.decisions import Decision
+from .models.users import User
 from backend.config import settings
 
 # Database engine
@@ -15,6 +16,10 @@ engine = create_engine(settings.DATABASE_URL, echo=True)
 
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Function to get a database session
+def get_session():
+    return SessionLocal()
 
 # Dependency to get DB session
 def get_db():

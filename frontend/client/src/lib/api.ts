@@ -77,6 +77,13 @@ export interface User {
   username: string;
   email: string;
   role?: string;
+  full_name?: string;
+}
+
+export interface SignupResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
 }
 
 export const authAPI = {
@@ -110,6 +117,17 @@ export const authAPI = {
    */
   getCurrentUser: async (): Promise<User> => {
     return apiCall<User>('/auth/users/me');
+  },
+
+  /**
+   * Signup with email, password, and full name
+   * POST /auth/signup
+   */
+  signup: async (email: string, password: string, fullName: string): Promise<SignupResponse> => {
+    return apiCall<SignupResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, full_name: fullName }),
+    });
   },
 
   /**
