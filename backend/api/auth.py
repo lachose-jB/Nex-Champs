@@ -11,6 +11,7 @@ from backend.utils.auth import (
     User,
     hash_password,
     verify_password,
+    validate_password
 )
 from backend.config import settings
 from backend.models.users import User as DBUser
@@ -66,7 +67,7 @@ async def signup(user_data: UserCreate, db: Session = Depends(get_db)):
 
     # Check if user already exists
     statement = select(DBUser).where(DBUser.email == user_data.email)
-    existing_user = db.exec(statement).first()
+    existing_user = db.execute(statement).scalars().first()
 
     if existing_user:
         raise HTTPException(
