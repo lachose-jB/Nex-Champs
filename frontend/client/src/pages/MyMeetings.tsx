@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useUserMeetings, useDeleteMeeting } from "@/lib/hooks";
+import { useUserMeetings, useDeleteMeeting, useCreateMeeting } from "@/lib/hooks";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import CreateMeetingModal from "@/components/CreateMeetingModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,12 +28,14 @@ export default function MyMeetings() {
   // API Hooks
   const { data: meetings = [], isLoading, refetch } = useUserMeetings();
   const deleteMeetingMutation = useDeleteMeeting();
+  const createMeetingMutation = useCreateMeeting();
 
   // UI State
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [meetingToDelete, setMeetingToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Filter meetings by search query
   const filteredMeetings = meetings.filter((meeting: any) =>
@@ -67,8 +70,13 @@ export default function MyMeetings() {
     setLocation(`/meeting/${meetingId}`);
   };
 
-  const handleCreateMeeting = () => {
-    setLocation("/");
+  const handleCreateMeeting = async (data: { 
+    name: string; 
+    description?: string; 
+    scheduled_at?: string 
+  }) => {
+    await createMeetingMutation.mutateAsync(data);
+    refetch();
   };
 
   if (isLoading) {
@@ -96,7 +104,7 @@ export default function MyMeetings() {
             <h1 className="text-3xl font-bold text-gray-900">{t("meetings.myMeetings") || "My Meetings"}</h1>
           </div>
           <Button
-            onClick={handleCreateMeeting}
+            onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="w-4 h-4" />
@@ -138,7 +146,7 @@ export default function MyMeetings() {
               </div>
               {!searchQuery && (
                 <Button
-                  onClick={handleCreateMeeting}
+                  onClick={() => setShowCreateModal(true)}
                   className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2 mx-auto"
                 >
                   <Plus className="w-4 h-4" />
@@ -257,6 +265,15 @@ export default function MyMeetings() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Meeting Modal */}
+      <CreateMeetingModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onSubmit={handleCreateMeeting}
+        isLoading={createMeetingMutation.isPending}
+        onMeetingCreated={refetch}
+      />
     </div>
   );
 }

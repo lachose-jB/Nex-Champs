@@ -23,12 +23,16 @@ export class ApiError extends Error {
 /**
  * Generic fetch wrapper with error handling
  */
+// ============================================
+// Generic fetch wrapper with auto token handling
+// ============================================
+
 async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token = localStorage.getItem('auth_token');
-  
+  const token = await getValidToken(); // <-- Toujours utiliser le token valide
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
@@ -41,6 +45,7 @@ async function apiCall<T>(
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -55,18 +60,16 @@ async function apiCall<T>(
         errorMessage = errorData.message;
       }
     } catch (e) {
-      // Use default error message
+      // fallback
     }
     throw new ApiError(response.status, errorMessage);
   }
 
-  // Handle 204 No Content responses
-  if (response.status === 204) {
-    return undefined as T;
-  }
+  if (response.status === 204) return undefined as T;
 
   return response.json();
 }
+
 
 // ============================================
 // AUTH ENDPOINTS
@@ -97,6 +100,7 @@ export interface SignupData {
 }
 
 export interface SignupResponse {
+  access_token(arg0: string, access_token: any): unknown;
   id: number;
   username: string;
   email: string;
@@ -174,10 +178,10 @@ export const authAPI = {
 
   /**
    * Get current user information
-   * GET /auth/users/me
+   * GET /auth/users/me/
    */
   getCurrentUser: async (): Promise<User> => {
-    return apiCall<User>('/auth/users/me');
+    return apiCall<User>('/auth/users/me/');
   },
 
   /**
@@ -241,9 +245,14 @@ export interface Meeting {
   id: number;
   name: string;
   description?: string;
+  is_active?: boolean;
+  current_phase?: string;
+  creator_id?: number;
+  scheduled_at?: string;
   created_at?: string;
   updated_at?: string;
   status?: string;
+  participants?: Participant[];
 }
 
 export interface Participant {
@@ -260,7 +269,7 @@ export const meetingsAPI = {
    * Create a new meeting
    * POST /meetings/
    */
-  create: async (data: { name: string; description?: string }): Promise<Meeting> => {
+  create: async (data: { name: string; description?: string; scheduled_at?: string }): Promise<Meeting> => {
     return apiCall<Meeting>('/meetings/', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -273,6 +282,14 @@ export const meetingsAPI = {
    */
   list: async (): Promise<Meeting[]> => {
     return apiCall<Meeting[]>('/meetings/');
+  },
+
+  /**
+   * Get user's created meetings
+   * GET /meetings/me/created
+   */
+  getUserCreatedMeetings: async (): Promise<Meeting[]> => {
+    return apiCall<Meeting[]>('/meetings/me/created');
   },
 
   /**

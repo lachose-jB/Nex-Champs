@@ -64,9 +64,13 @@
     "stopRecording": "Arrêter l'enregistrement",
     "phases": "Phases",
     "ideation": "Idéation",
+    "ideationDesc": "Génération libre d'idées et de propositions",
     "clarification": "Clarification",
+    "clarificationDesc": "Analyse, questions et clarifications",
     "decision": "Décision",
+    "decisionDesc": "Vote et choix formel",
     "feedback": "Retours",
+    "feedbackDesc": "Retours et améliorations",
     "tokenHolder": "Détenteur du Token",
     "currentPhase": "Phase actuelle",
     "noHolder": "Aucun détenteur",
@@ -214,16 +218,6 @@
     "observer": "Observateur",
     "admin": "Administrateur"
   },
-  "phases": {
-    "ideation": "Idéation",
-    "ideationDesc": "Génération libre d'idées et de propositions",
-    "clarification": "Clarification",
-    "clarificationDesc": "Analyse, questions et clarifications",
-    "decision": "Décision",
-    "decisionDesc": "Vote et choix formel",
-    "feedback": "Retours",
-    "feedbackDesc": "Retours et améliorations"
-  },
   "notifications": {
     "tokenReceived": "Vous avez reçu le Token",
     "tokenExpired": "Votre Token a expiré",
@@ -351,6 +345,122 @@
     "deleteWarning": "Cette action ne peut pas être annulée. La réunion et toutes les données associées seront supprimées de manière permanente.",
     "deleting": "Suppression en cours...",
     "cancel": "Annuler",
-    "deletedSuccess": "Réunion supprimée avec succès"
+    "deletedSuccess": "Réunion supprimée avec succès",
+    "leftMeeting": "Vous avez quitté la réunion",
+    "inviteParticipants": "Inviter des participants",
+    "sendInvitation": "Envoyer l'invitation",
+    "role": "Rôle",
+    "invitations": "Invitations",
+    "invitationSent": "Invitation envoyée avec succès",
+    "invitationAccepted": "Invitation acceptée",
+    "invitationDeclined": "Invitation refusée",
+    "noInvitations": "Aucune invitation",
+    "noInvitationsDescription": "Vous n'avez pas d'invitations en attente",
+    "requestPermission": "Demander une permission",
+    "requestWhat": "Que souhaitez-vous demander ?",
+    "requestDescription": "Votre demande sera envoyée au facilitateur de la réunion",
+    "requestCamera": "Demander l'accès à la caméra",
+    "requestMicrophone": "Demander l'accès au microphone",
+    "requestSpeakingTime": "Demander la parole",
+    "requestSent": "Demande envoyée au facilitateur",
+    "pendingRequests": "Demandes en attente",
+    "name": "Nom de la réunion",
+    "namePlaceholder": "Entrez le nom de la réunion...",
+    "description": "Description",
+    "descriptionPlaceholder": "Entrez la description de la réunion (facultatif)...",
+    "schedule": "Programmer (Facultatif)",
+    "scheduleHint": "Laissez vide pour créer immédiatement",
+    "create": "Créer",
+    "creating": "Création en cours...",
+    "createdSuccess": "Réunion créée avec succès",
+    "createDescription": "Créez une nouvelle réunion ou programmez-en une pour plus tard",
+    "nameRequired": "Le nom de la réunion est requis",
+    "requestType": {
+      "camera": "Accès à la caméra",
+      "microphone": "Accès au microphone",
+      "speaking": "Droit de parole"
+    },
+    "changeRole": "Changer le rôle",
+    "changeRoleFor": "Changer le rôle pour",
+    "noParticipants": "Aucun participant pour l'instant",
+    "phases": {
+      "ideation": "Idéation",
+      "discussion": "Discussion",
+      "vote": "Vote",
+      "decision": "Décision",
+      "closure": "Clôture",
+      "presentation": "Présentation",
+      "feedback": "Retour d'expérience"
+    }
+  },
+  "menu": {
+    "profile": "Profil",
+    "myMeetings": "Mes réunions",
+    "invitations": "Invitations"
+  },
+  "token": {
+    "speechToken": "Token de Parole",
+    "currentSpeaker": "Orateur Actuel",
+    "youHaveToken": "Vous avez le Token",
+    "anotherParticipant": "Un autre participant a le Token",
+    "noTokenHolder": "Personne ne parle",
+    "inQueue": "En attente...",
+    "requestToken": "Demander la Parole",
+    "queue": "Queue d'attente",
+    "you": "Vous",
+    "howWorks": "Comment ça fonctionne",
+    "rule1": "Une seule personne peut parler à la fois",
+    "rule2": "Demandez le token pour parler",
+    "rule3": "Quand vous parlez, vous pouvez annoter et dessiner",
+    "requestSent": "Demande de parole envoyée",
+    "waitingForToken": "En attente du token de parole"
+  },
+  "phase": {
+    "phases": "Phases de la Réunion",
+    "nextPhase": "Phase Suivante",
+    "meetingComplete": "Toutes les phases sont terminées",
+    "facilitatorControlsPhases": "Seul le facilitateur peut changer les phases",
+    "phaseChanged": "Phase modifiée avec succès"
+  },
+  "role": {
+    "roleAndPermissions": "Rôle et Permissions",
+    "yourRole": "Votre Rôle",
+    "description": "Description"
+  },
+  "permission": {
+    "canSpeak": "Peut Parler",
+    "canAnnotate": "Peut Annoter et Dessiner",
+    "canVote": "Peut Voter",
+    "canManagePhases": "Peut Gérer les Phases"
+  },
+  "roleDesc": {
+    "facilitator": "Gère le déroulement de la réunion, contrôle les phases, a l'autorité sur les annotations",
+    "participant": "Peut parler (avec token), annoter quand il parle, et voter",
+    "observer": "Peut voir la réunion mais ne peut pas parler ou voter"
+  },
+  "roles": {
+    "facilitator": "Facilitateur",
+    "participant": "Participant",
+    "observer": "Observateur"
+  },
+  "invitation": {
+    "pending": "En attente",
+    "accepted": "Acceptée",
+    "declined": "Refusée"
+  },
+  "errors": {
+    "emailRequired": "Veuillez entrer une adresse email",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "invitationFailed": "Impossible d'envoyer l'invitation",
+    "loadingFailed": "Impossible de charger les invitations",
+    "acceptFailed": "Impossible d'accepter l'invitation",
+    "declineFailed": "Impossible de refuser l'invitation",
+    "requestFailed": "Impossible d'envoyer la demande",
+    "approveFailed": "Impossible d'approuver la demande",
+    "denyFailed": "Impossible de refuser la demande",
+    "roleUpdateFailed": "Impossible de mettre à jour le rôle",
+    "leaveMeetingError": "Impossible de quitter la réunion",
+    "recordingError": "Erreur d'enregistrement",
+    "copyFailed": "Impossible de copier"
   }
 }

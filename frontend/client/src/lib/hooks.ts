@@ -22,10 +22,11 @@ export function useMeetingById(meetingId: number) {
 export function useCreateMeeting() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; description?: string }) =>
+    mutationFn: (data: { name: string; description?: string; scheduled_at?: string }) =>
       api.meetings.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['meetings', 'user', 'created'] });
     },
   });
 }

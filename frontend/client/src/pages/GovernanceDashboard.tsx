@@ -52,17 +52,17 @@ export default function GovernanceDashboard() {
 
     // Phase distribution
     const phases = [
-      { name: t("phases.ideation"), value: 25 },
-      { name: t("phases.clarification"), value: 35 },
-      { name: t("phases.decision"), value: 25 },
-      { name: t("phases.feedback"), value: 15 },
+      { name: t("ideation"), value: 25 },
+      { name: t("clarification"), value: 35 },
+      { name: t("decision"), value: 25 },
+      { name: t("feedback"), value: 15 },
     ];
 
     setPhaseData(phases);
 
     // Role distribution
     const roles = [
-      { name: t("roles.participant"), value: 2 },
+      { name: t("participant"), value: 2 },
     ];
 
     setRoleData(roles);
@@ -95,8 +95,8 @@ export default function GovernanceDashboard() {
   if (!meeting) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <h1 className="text-2xl font-bold">{t("meeting.notFound")}</h1>
-        <Button onClick={() => setLocation("/")}>{t("common.back")}</Button>
+        <h1 className="text-2xl font-bold">{t("notFound")}</h1>
+        <Button onClick={() => setLocation("/")}>{t("back")}</Button>
       </div>
     );
   }
@@ -114,16 +114,16 @@ export default function GovernanceDashboard() {
               className="gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t("common.back")}
+              {t("back")}
             </Button>
             <div>
-              <h1 className="text-xl font-bold">{t("dashboard.title")}</h1>
+              <h1 className="text-xl font-bold">{t("title")}</h1>
               <p className="text-sm text-gray-600">{meeting?.name}</p>
             </div>
           </div>
           <Button variant="outline" className="gap-2">
             <Download className="w-4 h-4" />
-            {t("export.downloadAudit")}
+            {t("downloadAudit")}
           </Button>
         </div>
       </header>
@@ -134,7 +134,7 @@ export default function GovernanceDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                {t("dashboard.participants")}
+                {t("participants")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -148,7 +148,7 @@ export default function GovernanceDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                {t("dashboard.totalDuration")}
+                {t("totalDuration")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -162,7 +162,7 @@ export default function GovernanceDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                {t("dashboard.annotations")}
+                {t("annotations")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -176,7 +176,7 @@ export default function GovernanceDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                {t("dashboard.equityMetrics")}
+                {t("equityMetrics")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -193,7 +193,7 @@ export default function GovernanceDashboard() {
           {/* Speaking Time by Participant */}
           <Card>
             <CardHeader>
-              <CardTitle>{t("dashboard.participantDetails")}</CardTitle>
+              <CardTitle>{t("participantDetails")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -203,8 +203,8 @@ export default function GovernanceDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="speakingTime" fill="#3b82f6" name={t("dashboard.speakingTime")} />
-                  <Bar dataKey="annotations" fill="#8b5cf6" name={t("dashboard.actionsCount")} />
+                  <Bar dataKey="speakingTime" fill="#3b82f6" name={t("speakingTime")} />
+                  <Bar dataKey="annotations" fill="#8b5cf6" name={t("actionsCount")} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -213,7 +213,7 @@ export default function GovernanceDashboard() {
           {/* Phase Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>{t("dashboard.phaseDistribution")}</CardTitle>
+              <CardTitle>{t("phaseDistribution")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -242,18 +242,18 @@ export default function GovernanceDashboard() {
         {/* Participant Details Table */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("dashboard.participantDetails")}</CardTitle>
+            <CardTitle>{t("participantDetails")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="text-left py-2 px-4">{t("dashboard.participant")}</th>
-                    <th className="text-left py-2 px-4">{t("dashboard.role")}</th>
-                    <th className="text-left py-2 px-4">{t("dashboard.speakingTime")}</th>
-                    <th className="text-left py-2 px-4">{t("dashboard.actionsCount")}</th>
-                    <th className="text-left py-2 px-4">{t("dashboard.equity")}</th>
+                    <th className="text-left py-2 px-4">{t("participant")}</th>
+                    <th className="text-left py-2 px-4">{t("role")}</th>
+                    <th className="text-left py-2 px-4">{t("speakingTime")}</th>
+                    <th className="text-left py-2 px-4">{t("actionsCount")}</th>
+                    <th className="text-left py-2 px-4">{t("equity")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -270,7 +270,7 @@ export default function GovernanceDashboard() {
                       <tr key={idx} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-4 font-medium">{row.name}</td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline">{t(`roles.${row.role}`)}</Badge>
+                          <Badge variant="outline">{t(`${row.role}`)}</Badge>
                         </td>
                         <td className="py-3 px-4">{Math.round(row.speakingTime)}s</td>
                         <td className="py-3 px-4">{row.annotations}</td>
@@ -284,7 +284,7 @@ export default function GovernanceDashboard() {
                                   : "destructive"
                             }
                           >
-                            {t(`dashboard.${equity}`)}
+                            {t(`${equity}`)}
                           </Badge>
                         </td>
                       </tr>
@@ -299,7 +299,7 @@ export default function GovernanceDashboard() {
         {/* Decision History */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>{t("dashboard.decisionHistory")}</CardTitle>
+            <CardTitle>{t("decisionHistory")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -307,12 +307,12 @@ export default function GovernanceDashboard() {
                 <div key={i} className="flex items-start gap-4 p-4 border rounded-lg">
                   <CheckCircle className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h4 className="font-medium">{t("dashboard.decisionDescription")}</h4>
+                    <h4 className="font-medium">{t("decisionDescription")}</h4>
                     <p className="text-sm text-gray-600 mt-1">
-                      {t("dashboard.decisionDate")}: {new Date().toLocaleDateString()}
+                      {t("decisionDate")}: {new Date().toLocaleDateString()}
                     </p>
                   </div>
-                  <Badge>{t("dashboard.approved")}</Badge>
+                  <Badge>{t("approved")}</Badge>
                 </div>
               ))}
             </div>

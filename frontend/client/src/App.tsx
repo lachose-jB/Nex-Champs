@@ -13,6 +13,7 @@ import GovernanceDashboard from "./pages/GovernanceDashboard";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import MyMeetings from "./pages/MyMeetings";
+import Invitations from "./pages/Invitations";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/meetings"} component={MyMeetings} />
+      <Route path={"/invitations"} component={Invitations} />
       <Route path={"/meeting/:meetingId"} component={MeetingRoom} />
       <Route path={"/meeting/:meetingId/dashboard"} component={GovernanceDashboard} />
       <Route path={"/404"} component={NotFound} />

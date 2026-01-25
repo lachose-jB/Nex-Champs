@@ -30,17 +30,17 @@ export default function Signup() {
 
     // Validate form
     if (!name.trim()) {
-      setError(t('auth.nameRequired'));
+      setError(t('nameRequired'));
       return;
     }
 
     if (!email.trim()) {
-      setError(t('auth.emailRequired'));
+      setError(t('emailRequired'));
       return;
     }
 
     if (!password.trim()) {
-      setError(t('auth.passwordRequired'));
+      setError(t('passwordRequired'));
       return;
     }
 
@@ -50,7 +50,7 @@ export default function Signup() {
     }
 
     if (password !== confirmPassword) {
-      setError(t('auth.passwordMismatch'));
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -59,7 +59,7 @@ export default function Signup() {
       // First, signup/register the user
       // Note: The backend API guide shows login endpoint, not signup
       // You'll need to implement signup on the backend
-      const response = await api.auth.signup({ name, email, password });
+      const response = await api.signup({ name, email, password });
       localStorage.setItem('auth_token', response.access_token);
       setSuccess(true);
       setTimeout(() => {
@@ -88,14 +88,14 @@ export default function Signup() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Orchestra-sec</h1>
-          <p className="text-slate-400">{t('home.subtitle')}</p>
+          <p className="text-slate-400">{t('subtitle')}</p>
         </div>
 
         {/* Signup Card */}
         <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-white">{t('auth.signup')}</CardTitle>
-            <CardDescription>{t('auth.signupDescription')}</CardDescription>
+            <CardTitle className="text-white">{t('signup')}</CardTitle>
+            <CardDescription>{t('signupDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* OAuth Button */}
@@ -122,7 +122,7 @@ export default function Signup() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {t('auth.signupWithGoogle')}
+              {t('signupWithGoogle')}
             </Button>
 
             {/* Divider */}
@@ -131,7 +131,7 @@ export default function Signup() {
                 <div className="w-full border-t border-slate-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-800/50 text-slate-400">{t('auth.or')}</span>
+                <span className="px-2 bg-slate-800/50 text-slate-400">{t('or')}</span>
               </div>
             </div>
 
@@ -147,12 +147,12 @@ export default function Signup() {
               {success && (
                 <div className="p-3 bg-green-900/20 border border-green-700 rounded-lg text-green-300 text-sm flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  <span>{t('auth.signupSuccess')}</span>
+                  <span>{t('signupSuccess')}</span>
                 </div>
               )}
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">{t('auth.name')}</label>
+                <label className="text-sm font-medium text-slate-300">{t('name')}</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                   <Input
@@ -167,7 +167,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">{t('auth.email')}</label>
+                <label className="text-sm font-medium text-slate-300">{t('email')}</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                   <Input
@@ -182,7 +182,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">{t('auth.password')}</label>
+                <label className="text-sm font-medium text-slate-300">{t('password')}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                   <Input
@@ -197,7 +197,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">{t('auth.confirmPassword')}</label>
+                <label className="text-sm font-medium text-slate-300">{t('confirmPassword')}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
                   <Input
@@ -225,7 +225,7 @@ export default function Signup() {
                 ) : (
                   <>
                     <UserPlus className="w-5 h-5 mr-2" />
-                    {t('auth.signup')}
+                    {t('signup')}
                   </>
                 )}
               </Button>
@@ -233,12 +233,12 @@ export default function Signup() {
 
             {/* Footer */}
             <div className="text-center text-sm text-slate-400">
-              {t('auth.haveAccount')}{' '}
+              {t('haveAccount')}{' '}
               <button
                 onClick={() => setLocation('/login')}
                 className="text-orange-400 hover:text-orange-300 font-semibold"
               >
-                {t('auth.login')}
+                {t('login')}
               </button>
             </div>
           </CardContent>

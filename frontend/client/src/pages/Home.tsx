@@ -78,12 +78,12 @@ export default function Home() {
               </div>
               <CardTitle className="text-3xl">Orchestra-sec</CardTitle>
               <p className="text-sm text-gray-600 mt-2">
-                {t("home.subtitle")}
+                {t("subtitle")}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-gray-700">
-                {t("home.description")}
+                {t("description")}
               </p>
               <div className="flex justify-center">
                 <LanguageSwitcher />
@@ -95,7 +95,7 @@ export default function Home() {
                   size="lg"
                   variant="default"
                 >
-                  {t("auth.login")}
+                  {t("login")}
                 </Button>
                 <Button 
                   onClick={() => setLocation("/signup")}
@@ -103,7 +103,7 @@ export default function Home() {
                   size="lg"
                   variant="outline"
                 >
-                  {t("auth.signup")}
+                  {t("signup")}
                 </Button>
               </div>
             </CardContent>
@@ -129,7 +129,7 @@ export default function Home() {
               size="sm"
               onClick={() => setLocation("/meetings")}
             >
-              {t("meetings.myMeetings") || "My Meetings"}
+              {t("myMeetings") || "My Meetings"}
             </Button>
             <Button
               variant="outline"
@@ -146,9 +146,9 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="mb-12">
-          <h2 className="text-4xl font-bold mb-4">{t("home.title")}</h2>
+          <h2 className="text-4xl font-bold mb-4">{t("title")}</h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl">
-            {t("home.description")}
+            {t("description")}
           </p>
 
           {/* Features Grid */}
@@ -156,11 +156,11 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <Zap className="w-6 h-6 text-blue-600 mb-2" />
-                <CardTitle className="text-lg">{t("home.features.token")}</CardTitle>
+                <CardTitle className="text-lg">{t("token")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  {t("home.features.tokenDesc")}
+                  {t("tokenDesc")}
                 </p>
               </CardContent>
             </Card>
@@ -168,11 +168,11 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <Users className="w-6 h-6 text-green-600 mb-2" />
-                <CardTitle className="text-lg">{t("home.features.phases")}</CardTitle>
+                <CardTitle className="text-lg">{t("phases")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  {t("home.features.phasesDesc")}
+                  {t("phasesDesc")}
                 </p>
               </CardContent>
             </Card>
@@ -180,11 +180,11 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <BarChart3 className="w-6 h-6 text-purple-600 mb-2" />
-                <CardTitle className="text-lg">{t("home.features.equity")}</CardTitle>
+                <CardTitle className="text-lg">{t("equity")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  {t("home.features.equityDesc")}
+                  {t("equityDesc")}
                 </p>
               </CardContent>
             </Card>
@@ -192,11 +192,11 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <Crown className="w-6 h-6 text-amber-600 mb-2" />
-                <CardTitle className="text-lg">{t("home.features.traceability")}</CardTitle>
+                <CardTitle className="text-lg">{t("traceability")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  {t("home.features.traceabilityDesc")}
+                  {t("traceabilityDesc")}
                 </p>
               </CardContent>
             </Card>
@@ -205,7 +205,7 @@ export default function Home() {
 
         {/* Create Meeting Section */}
         <div className="bg-white rounded-lg shadow-md p-8 mb-12">
-          <h3 className="text-2xl font-bold mb-6">{t("home.createMeeting")}</h3>
+          <h3 className="text-2xl font-bold mb-6">{t("createMeeting")}</h3>
 
           {!showCreateForm ? (
             <Button
@@ -213,17 +213,17 @@ export default function Home() {
               onClick={() => setShowCreateForm(true)}
               className="bg-amber-600 hover:bg-amber-700"
             >
-              {t("home.newMeeting")}
+              {t("newMeeting")}
             </Button>
           ) : (
             <form onSubmit={handleCreateMeeting} className="space-y-4 max-w-md">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("home.meetingTitle")}
+                  {t("meetingTitle")}
                 </label>
                 <Input
                   type="text"
-                  placeholder={t("home.meetingTitlePlaceholder")}
+                  placeholder={t("meetingTitlePlaceholder")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -232,10 +232,10 @@ export default function Home() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("home.meetingDescription")}
+                  {t("meetingDescription")}
                 </label>
                 <Textarea
-                  placeholder={t("home.meetingDescriptionPlaceholder")}
+                  placeholder={t("meetingDescriptionPlaceholder")}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
@@ -251,10 +251,10 @@ export default function Home() {
                   {createMeetingMutation.isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t("home.creating")}
+                      {t("creating")}
                     </>
                   ) : (
-                    t("home.createButton")
+                    t("createButton")
                   )}
                 </Button>
                 <Button
@@ -262,7 +262,7 @@ export default function Home() {
                   variant="outline"
                   onClick={() => setShowCreateForm(false)}
                 >
-                  {t("common.cancel")}
+                  {t("cancel")}
                 </Button>
               </div>
             </form>
@@ -347,7 +347,7 @@ export default function Home() {
                     setJoinName("");
                   }}
                 >
-                  {t("common.cancel")}
+                  {t("cancel")}
                 </Button>
               </div>
             </form>
@@ -356,14 +356,14 @@ export default function Home() {
 
         {/* How It Works */}
         <div className="bg-white rounded-lg shadow-md p-8">
-          <h3 className="text-2xl font-bold mb-6">{t("home.howItWorks")}</h3>
+          <h3 className="text-2xl font-bold mb-6">{t("howItWorks")}</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { step: "1", titleKey: "home.step1", descKey: "home.step1Desc" },
-              { step: "2", titleKey: "home.step2", descKey: "home.step2Desc" },
-              { step: "3", titleKey: "home.step3", descKey: "home.step3Desc" },
-              { step: "4", titleKey: "home.step4", descKey: "home.step4Desc" },
+              { step: "1", titleKey: "step1", descKey: "step1Desc" },
+              { step: "2", titleKey: "step2", descKey: "step2Desc" },
+              { step: "3", titleKey: "step3", descKey: "step3Desc" },
+              { step: "4", titleKey: "step4", descKey: "step4Desc" },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-600 text-white font-bold mb-4">

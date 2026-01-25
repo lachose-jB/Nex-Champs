@@ -10,13 +10,15 @@ from backend.api import api_router
 
 app = FastAPI(title="Nex-Champs Backend", version="0.1.0")
 
-# Configure CORS
+# Configure CORS with explicit settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 # Initialize database on startup (using lifecycle events)
